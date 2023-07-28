@@ -15,12 +15,21 @@ def init_screen_capture():
     return screen_capture
 
 
+object_detector = cv2.createBackgroundSubtractorMOG2()
+
+
 # Object detection function
 def detect_objects(frame):
-    # Use YOLO or TensorFlow for object detection and return the detected objects' bounding boxes
-    # For example (if using YOLO):
-    # detector = ObjectDetector(...)
-    # results = detector.detect(frame)
+    mask = object_detector.apply(frame)
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if area > 32 and area < 800:
+            cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 1)
+
+    # cv2.imshow("Mask", mask)
+    return frame
+
 
     # For example (if using TensorFlow):
     # detector = ObjectDetector(...)
