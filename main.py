@@ -18,6 +18,8 @@ object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=1
 def detect_objects(frame):
     mask = object_detector.apply(frame)
 
+    # _, mask = cv2.threshold(mask, 1, 30, cv2.THRESH_BINARY)  # CONTROLLING SHADOW
+
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     for cnt in contours:
