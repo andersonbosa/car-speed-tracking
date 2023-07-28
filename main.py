@@ -31,14 +31,19 @@ def detect_objects(frame):
     return frame
 
 
-    # For example (if using TensorFlow):
-    # detector = ObjectDetector(...)
-    # results = detector.detect(frame)
+def get_area_of_interest(frame):
+    height, width, _ = frame.shape
+    print(f"[DEBUG] x:{width}, y:{height}")
 
-    # Replace the above lines with your specific code based on the chosen library.
+    y_1 = int(height / 4)
+    y_2 = y_1 + y_1 * 2
 
-    # In the end, return the processed frame with bounding boxes (if using YOLO, TensorFlow, etc.)
-    return frame
+    x_1 = 0
+    x_2 = int(width)
+
+    roi = frame[y_1:y_2, x_1:x_2]
+
+    return roi
 
 
 # Main loop
@@ -50,8 +55,11 @@ def main():
         if not ret:
             break
 
+        # Extract area of interest
+        roi = get_area_of_interest(frame)
+
         # Process the frame for object detection
-        processed_frame = detect_objects(frame)
+        processed_frame = detect_objects(roi)
 
         # Display the processed frame (optional, if you want to add GUI rendering)
         cv2.imshow("Object Detection", processed_frame)
