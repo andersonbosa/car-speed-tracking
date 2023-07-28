@@ -1,31 +1,39 @@
+import os
+from pathlib import Path
+
 import cv2
 import numpy as np
+from tracker import EuclideanDistTracker
+
+main_dir_path = os.path.dirname(__file__)
 
 
 # Initialize the screen capture
 def init_screen_capture():
     # screen_capture = cv2.VideoCapture(0)  # Use 0 for the primary screen capture device
     screen_capture = cv2.VideoCapture(
-        "/home/t4inha/devspace/the-cheat/_datasets/take4.mp4"
+        # "/home/t4inha/devspace/the-cheat/_datasets/take4.mp4"
+        str(Path(f"{main_dir_path}/assets/video2.mp4").resolve())
+        # 0
     )
     return screen_capture
 
 
-object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=128)
+object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=50)
 
 
 # Object detection function
 def detect_objects(frame):
     mask = object_detector.apply(frame)
 
-    # _, mask = cv2.threshold(mask, 1, 30, cv2.THRESH_BINARY)  # CONTROLLING SHADOW
+    _, mask = cv2.threshold(mask, 254, 255, cv2.THRESH_BINARY)  # CONTROLLING SHADOW
 
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     for cnt in contours:
         area = cv2.contourArea(cnt)
         # if area < 16 and area > 4:
-        if area > 2**7:
+        if area > 100:
             # cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 1)
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
