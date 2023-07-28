@@ -7,7 +7,7 @@ from tracker import EuclideanDistTracker
 
 main_dir_path = os.path.dirname(__file__)
 
-object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=50)
+object_detector = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=40)
 tracker = EuclideanDistTracker()
 
 
@@ -15,9 +15,7 @@ tracker = EuclideanDistTracker()
 def init_screen_capture():
     # screen_capture = cv2.VideoCapture(0)  # Use 0 for the primary screen capture device
     screen_capture = cv2.VideoCapture(
-        # "/home/t4inha/devspace/the-cheat/_datasets/take4.mp4"
-        str(Path(f"{main_dir_path}/assets/video2.mp4").resolve())
-        # 0
+        str(Path(f"{main_dir_path}/assets/video1.mp4").resolve())
     )
     return screen_capture
 
@@ -27,15 +25,14 @@ def process_frame(frame):
     # 1. Object detection
     mask = object_detector.apply(frame)
 
-    _, mask = cv2.threshold(mask, 254, 255, cv2.THRESH_BINARY)  # CONTROLLING SHADOW
+    _, mask = cv2.threshold(mask, 254, 255, cv2.THRESH_BINARY)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     detections = []
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        # if area < 16 and area > 4:
-        if area > 1024:
+        if area > 400:
             # cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 1)
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -43,7 +40,7 @@ def process_frame(frame):
             detections.append([x, y, w, h])
 
     # 2. Object tracking
-    print(f"[DEBUG]", detections)
+    print(f"[DEBUG] {detections}")
     boxes_id = tracker.update(detections)
     for box_id in boxes_id:
         x, y, w, h, _id = box_id
@@ -52,7 +49,7 @@ def process_frame(frame):
         )
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    # cv2.waitKey(0)
+    # cv2.waitKey(0) # helps debug frame per
     cv2.imshow("Mask", mask)
     return frame
 
@@ -85,11 +82,11 @@ def main():
         roi = get_area_of_interest(frame)
 
         # Process the frame for object detection
-        processed_frame = process_frame(roi)
+        _processed_frame = process_frame(roi)
 
         # Display the processed frame (optional, if you want to add GUI rendering)
-        cv2.imshow("frame", frame)
-        cv2.imshow("processed_frame", processed_frame)
+        cv2.imshow("Frame", frame)
+        # cv2.imshow("Processed Frame", processed_frame)
 
         # Break the loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord("q"):
